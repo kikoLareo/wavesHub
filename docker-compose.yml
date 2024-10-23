@@ -1,0 +1,18 @@
+version: "3.8"
+
+services:
+  db:
+    image: postgres:14
+    container_name: wavesHub_db
+    restart: always
+    environment:
+      POSTGRES_USER: wavesHub_user
+      POSTGRES_PASSWORD: WavesHub
+      POSTGRES_DB: wavesHub_db
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+volumes:
+  db_data:

@@ -3,6 +3,7 @@ from typing import Optional
 
 class CalculationInput(BaseModel):
     judge_id: int = Field(..., gt=0)
+    championship_id: int = Field(..., gt=0)
     position: str
     hours: float = Field(..., gt=0)
     travel_distance_km: Optional[float] = 0.0

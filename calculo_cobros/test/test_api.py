@@ -6,6 +6,7 @@ client = TestClient(app)
 def test_calculate_endpoint_success():
     response = client.post("/api/calculate", json={
         "judge_id": 1,
+        "championship_id": 1,
         "position": "director_competicion",
         "hours": 8,
         "travel_distance_km": 150,
@@ -24,6 +25,7 @@ def test_calculate_endpoint_success():
 def test_calculate_endpoint_invalid_position():
     response = client.post("/api/calculate", json={
         "judge_id": 1,
+        "championship_id": 1,
         "position": "invalid_position",
         "hours": 8,
         "travel_distance_km": 150,
