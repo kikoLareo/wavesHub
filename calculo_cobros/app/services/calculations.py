@@ -2,6 +2,8 @@ from sqlalchemy.orm import Session
 from app.models.models import PaymentRecord
 from app.schemas.schemas import CalculationInput, CalculationOutput
 import logging
+from fastapi import HTTPException
+
 
 # Configuración de logs
 logging.basicConfig(
@@ -76,52 +78,63 @@ def calculate_payment(data: CalculationInput, db: Session) -> CalculationOutput:
 
     calculator = SurfFeeCalculator(position_rates, expenses, irpf_rate)
 
-    # Calcular tarifa después de IRPF
-    fee_after_irpf = calculator.calculate_fee(data.hours, data.position)
+    try:
+        # Calcular tarifa después de IRPF
+        fee_after_irpf = calculator.calculate_fee(data.hours, data.position)
 
-    # Calcular gastos adicionales
-    total_expenses = calculator.calculate_expenses(
-        data.travel_distance_km,
-        data.full_meal_days,
-        data.half_meal_days,
-        data.lodging_days
-    )
+        # Calcular gastos adicionales
+        total_expenses = calculator.calculate_expenses(
+            data.travel_distance_km,
+            data.full_meal_days,
+            data.half_meal_days,
+            data.lodging_days
+        )
 
-    # Calcular costos del sistema Refresh
-    total_refresh_cost = calculator.calculate_refresh_cost(
-        data.refresh_days,
-        data.operator_days
-    )
+        # Calcular costos del sistema Refresh
+        total_refresh_cost = calculator.calculate_refresh_cost(
+            data.refresh_days,
+            data.operator_days
+        )
 
-    # Calcular el monto total
-    total_amount = fee_after_irpf + total_expenses + total_refresh_cost
+        # Calcular el monto total
+        total_amount = fee_after_irpf + total_expenses + total_refresh_cost
 
-    # Detalles del cálculo
-    details = (
-        f"Tarifa después de IRPF: {fee_after_irpf:.2f} €, "
-        f"Gastos adicionales: {total_expenses:.2f} €, "
-        f"Costos de Refresh: {total_refresh_cost:.2f} €, "
-        f"Total: {total_amount:.2f} €"
-    )
+        # Detalles del cálculo
+        details = (
+            f"Tarifa después de IRPF: {fee_after_irpf:.2f} €, "
+            f"Gastos adicionales: {total_expenses:.2f} €, "
+            f"Costos de Refresh: {total_refresh_cost:.2f} €, "
+            f"Total: {total_amount:.2f} €"
+        )
 
-    # Guardar en la base de datos
-    payment_record = PaymentRecord(
-        judge_id=data.judge_id,
-        hours_worked=data.hours,
-        hourly_rate=fee_after_irpf / data.hours if data.hours > 0 else 0,
-        bonus=total_expenses + total_refresh_cost,
-        total=total_amount,
-        details=details
-    )
+        # Guardar en la base de datos
+        payment_record = PaymentRecord(
+            judge_id=data.judge_id,
+            position=data.position,
+            hours_worked=data.hours,
+            hourly_rate=fee_after_irpf / data.hours if data.hours > 0 else 0,
+            bonus=total_expenses + total_refresh_cost,
+            total=total_amount,
+            details=details
+        )
 
-    db.add(payment_record)
-    db.commit()
-    db.refresh(payment_record)
+        db.add(payment_record)
+        db.commit()
+        db.refresh(payment_record)
 
-    return CalculationOutput(
-        fee_after_irpf=fee_after_irpf,
-        total_expenses=total_expenses,
-        total_refresh_cost=total_refresh_cost,
-        total_amount=total_amount,
-        details=details
-    )
+        return CalculationOutput(
+            fee_after_irpf=fee_after_irpf,
+            total_expenses=total_expenses,
+            total_refresh_cost=total_refresh_cost,
+            total_amount=total_amount,
+            details=details
+        )
+    
+    except ValueError as e:
+        # Captura errores específicos, como posición no válida
+        raise HTTPException(status_code=400, detail=str(e))
+    
+    except Exception as e:
+        # Captura cualquier otro error que pueda ocurrir
+        db.rollback()  # Revertir la transacción si hay un error
+        raise HTTPException(status_code=500, detail="Error interno del servidor")
