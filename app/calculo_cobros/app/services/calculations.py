@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
-from app.models.Base import PaymentRecord
-from app.schemas.schemas import CalculationInput, CalculationOutput
+from app.calculo_cobros.app.models.models import PaymentRecord
+from app.calculo_cobros.app.schemas.schemas import CalculationInput, CalculationOutput
 import logging
 from fastapi import HTTPException
 

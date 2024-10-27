@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
-from app.core.database import get_db
-from app.services.calculations import calculate_payment
-from app.schemas.schemas import CalculationInput, CalculationOutput
+from app.database import get_db
+from app.calculo_cobros.app.services.calculations import calculate_payment
+from app.calculo_cobros.app.schemas.schemas import CalculationInput, CalculationOutput
 import uuid
 
 router = APIRouter()

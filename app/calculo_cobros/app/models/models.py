@@ -1,10 +1,8 @@
 from sqlalchemy.orm import DeclarativeBase
-from sqlalchemy import Column, Integer, String, Float, ForeignKey
+from sqlalchemy import Column, Integer, String, Float, ForeignKey,DateTime
 from sqlalchemy.orm import relationship
-
-# Definir `Base` correctamente
-class Base(DeclarativeBase):
-    pass
+from app.database import Base
+  
 # Ejemplos de Modelos utilizando `Base`
 class PaymentRecord(Base):
     __tablename__ = "payment_records"
@@ -48,3 +46,5 @@ class PositionRate(Base):
     id = Column(Integer, primary_key=True, index=True)
     position = Column(String, unique=True)
     daily_rate = Column(Float)
+
+
