@@ -1,11 +1,16 @@
+from BD.routers import users_role
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from app.database import Base, engine
-from app.utils.helpers import generate_transaction_id
 import logging
 from app.logging_config import setup_logging
 from app.calculo_cobros.app.routes.routes import router as calculo_router
-from app.users.app.routes import roles, user_roles
+from BD.routers import roles
+
+
+def generate_transaction_id():
+    return str(uuid.uuid4())
+
 
 # Configurar logging
 setup_logging()
@@ -44,4 +49,4 @@ async def add_transaction_id(request: Request, call_next):
 # Incluir las rutas con prefijos
 app.include_router(calculo_router, prefix="/api/calculo_cobros")
 app.include_router(roles.router, prefix="/api/roles")
-app.include_router(user_roles.router, prefix="/api/user_roles")
+app.include_router(users_role.router, prefix="/api/user_roles")
